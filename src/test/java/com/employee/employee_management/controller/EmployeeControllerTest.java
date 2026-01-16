@@ -69,4 +69,29 @@ class EmployeeControllerTest {
                 .andExpect(jsonPath("$.id").value(saved.getId()))
                 .andExpect(jsonPath("$.email").value("ravi@test.com"));
     }
+
+    @Test
+    void getActiveEmployees_onlyActiveReturned() throws Exception {
+        Employee activeEmployee = new Employee();
+        activeEmployee.setName("Active One");
+        activeEmployee.setEmail("active@test.com");
+        activeEmployee.setDepartment("IT");
+        activeEmployee.setSalary(60000.0);
+        activeEmployee.setStatus(Status.ACTIVE);
+
+        Employee inactiveEmployee = new Employee();
+        inactiveEmployee.setName("Inactive One");
+        inactiveEmployee.setEmail("inactive@test.com");
+        inactiveEmployee.setDepartment("IT");
+        inactiveEmployee.setSalary(30000.0);
+        inactiveEmployee.setStatus(Status.INACTIVE);
+
+        employeeRepository.save(activeEmployee);
+        employeeRepository.save(inactiveEmployee);
+
+        mockMvc.perform(get("/api/employees/active"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].email").value("active@test.com"));
+    }
 }
