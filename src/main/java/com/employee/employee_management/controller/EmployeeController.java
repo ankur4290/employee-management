@@ -3,6 +3,7 @@ package com.employee.employee_management.controller;
 import com.employee.employee_management.model.Employee;
 import com.employee.employee_management.service.EmployeeService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class EmployeeController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Employee addEmployee(@RequestBody @Valid Employee employee) {
         return service.addEmployee(employee);
     }
