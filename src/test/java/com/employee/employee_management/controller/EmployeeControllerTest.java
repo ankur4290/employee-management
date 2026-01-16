@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,5 +51,22 @@ class EmployeeControllerTest {
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.email").value("ankur@test.com"))
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
+    }
+
+    @Test
+    void getEmployeeById_success() throws Exception {
+        Employee employee = new Employee();
+        employee.setName("Ravi");
+        employee.setEmail("ravi@test.com");
+        employee.setDepartment("HR");
+        employee.setSalary(40000.0);
+        employee.setStatus(Status.ACTIVE);
+
+        Employee saved = employeeRepository.save(employee);
+
+        mockMvc.perform(get("/api/employees/{id}", saved.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(saved.getId()))
+                .andExpect(jsonPath("$.email").value("ravi@test.com"));
     }
 }
