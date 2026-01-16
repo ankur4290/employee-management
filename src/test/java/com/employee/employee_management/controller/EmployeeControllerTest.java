@@ -12,8 +12,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -93,5 +95,51 @@ class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].email").value("active@test.com"));
+    }
+
+    @Test
+    void updateEmployee_success() throws Exception {
+        Employee employee = new Employee();
+        employee.setName("Old Name");
+        employee.setEmail("update@test.com");
+        employee.setDepartment("IT");
+        employee.setSalary(45000.0);
+        employee.setStatus(Status.ACTIVE);
+
+        Employee saved = employeeRepository.save(employee);
+
+        Employee updated = new Employee();
+        updated.setName("New Name");
+        updated.setEmail("update@test.com");
+        updated.setDepartment("Finance");
+        updated.setSalary(70000.0);
+        updated.setStatus(Status.ACTIVE);
+
+        mockMvc.perform(put("/api/employees/{id}", saved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updated)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("New Name"))
+                .andExpect(jsonPath("$.department").value("Finance"))
+                .andExpect(jsonPath("$.salary").value(70000.0));
+    }
+
+    @Test
+    void deleteEmployee_softDelete_success() throws Exception {
+        Employee employee = new Employee();
+        employee.setName("To Delete");
+        employee.setEmail("delete@test.com");
+        employee.setDepartment("IT");
+        employee.setSalary(50000.0);
+        employee.setStatus(Status.ACTIVE);
+
+        Employee saved = employeeRepository.save(employee);
+
+        mockMvc.perform(delete("/api/employees/{id}", saved.getId()))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/employees/active"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }
